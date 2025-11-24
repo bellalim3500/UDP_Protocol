@@ -1,0 +1,35 @@
+//Basic definitions of characters
+
+DIGIT =%x30-39
+ALPHA = %x41-5A / %x61-7A
+SP = %x20
+CRLF = %x0D %x0A
+VCHAR = %x21-7E
+
+text = 1*(VCHAR / SP)  
+
+//header
+version ="Version:" SP 1*DIGIT SP CRLF
+sequence ="Sequence:" SP 1*DIGIT SP CRLF
+msg_id = "MsgId:" SP 1*(ALPHA /DIGIT) SP CRLF
+correlation_id = "CorrelationId:" SP 1*(ALPHA /DIGIT) SP CRLF
+msg_type = "Type:" SP ( hello / karte / pin / kontostand_r / abheben_r / bye /karte_ok / pin_ok  / abheben_ok / error ) SP CRLF
+timestamp = "Timestamp in Millis: " SP 1*DIGIT SP CRLF
+
+header = version SP sequence SP msg_id SP correlation_id SP  msg_type SP timestamp SP CRLF 
+
+//ABNF-rules for different msgTypes
+
+message = header CRLF  CRLF body CRLF 
+body = request / response CRLF
+
+//request-messages
+request = ping
+
+ping ="PING" SP text CRLF
+
+//response-messages
+
+response = pong 
+
+pong = "PONG" SP ACK(sequence) CRLF
