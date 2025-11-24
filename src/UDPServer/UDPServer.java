@@ -99,9 +99,10 @@ class UDPServer {
 						}
 
 						// simulate wrong Pong
-						// pong = new PongMsg(
-						// new MsgHeader(0, MsgType.PONG, 0, "1A", System.currentTimeMillis(),
-						// serverSocket.getLocalPort(), port));
+						// pong = new PongMsg(0);
+
+
+
 						pong = new Pong(ping.header().sequence());
 						System.out.println("Pong created: " + pong);
 
