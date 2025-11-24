@@ -1,10 +1,7 @@
 package UDPClient;
 
 import java.net.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-
 import codec.Codec;
 import messages.MsgHeader;
 import messages.MsgType;
