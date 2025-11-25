@@ -27,6 +27,7 @@ public class GBNClient {
         float receiveStart = 0;
         float receiveEnd = 0;
         int j = 0;
+        int failedAckIndex = -1;
         boolean running;
         boolean ackReceived = true;
 
@@ -54,9 +55,10 @@ public class GBNClient {
                     case GBNClientState.WAIT_FOR_CALL:
                         for (int i = 0; i < 5; i++) {
                             if (!ackReceived) {
-                                ping = lastFivePings[pipelineSequence%5];
-
-                                if (pipelineSequence % 5 == 0) {
+                                ping = lastFivePings[j];
+                                lastFivePings[i] = ping;
+                                j++;
+                                if (j % 5 == 0) {
                                     ackReceived = true;
                                 }
                             } else {
@@ -82,8 +84,20 @@ public class GBNClient {
                         state = GBNClientState.WAIT_FOR_ACK;
                         break;
                     case GBNClientState.WAIT_FOR_ACK:
+                        j = 0;
                         do {
                             try {
+                                // recieves duplicates but doesn't process the data, -1 if everythings okay
+                                while (failedAckIndex >= 0) {
+                                    receivePacket = new DatagramPacket(receiveData,
+                                        receiveData.length);
+
+                                    clientSocket.receive(receivePacket);
+                                    receiveEnd = System.currentTimeMillis();
+
+                                    failedAckIndex--;
+                                }
+
                                 receivePacket = new DatagramPacket(receiveData,
                                         receiveData.length);
 
@@ -100,7 +114,7 @@ public class GBNClient {
                                 System.out.println("FROM SERVER: " + pong.ack());
                                 
                                 // if not all five pipelined packages are sent ArrayOutOfBoundsException
-                                if (lastFivePings[j].header().sequence() == pong.ack()) {
+                                if (pong.ack() >= lastFivePings[j].header().sequence()) {
                                     j++;
                                     System.out.println("RTT: " + calculateRTT(receiveStart, receiveEnd));
                                     ackReceived = true;
@@ -111,11 +125,11 @@ public class GBNClient {
                                 System.err.println("Timeout");
                                 ackReceived = false;
                                 state = GBNClientState.WAIT_FOR_CALL;
+                                failedAckIndex = j;
                                 break;
                             }
                         } while (ackReceived && j != 5);
 
-                        j = 0;
                         state = GBNClientState.WAIT_FOR_CALL;
                         break;
                     default:
@@ -135,6 +149,6 @@ public class GBNClient {
     }
 
     public static float calculateRTT(float start, float end) {
-        return start - end;
+        return end - start;
     }
 }

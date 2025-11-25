@@ -19,6 +19,7 @@ public class GBNUDPServer {
 		InetAddress clientIPAddress = null;
 		int sourcePort = 0;
 		DatagramSocket serverSocket = null;
+		boolean firstTry = false;
 
 		try {
 			serverSocket = new DatagramSocket(port);
@@ -60,6 +61,11 @@ public class GBNUDPServer {
 
 				pong = new Pong(ping.header().sequence());
 				System.out.println("Pong created: " + pong);
+
+				if (pong.ack() == 2 && firstTry == false) {
+					Thread.sleep(6000);
+					firstTry = true;
+				}
 
 				sendData = pong.data();
 				System.out.println("Pong encoded");
