@@ -13,7 +13,7 @@ public class GBNClient {
     public static void main(String args[]) throws Exception {
         DatagramSocket clientSocket = null;
         Ping ping = null;
-        int windowSize = 3;
+        int windowSize = 8;
         Ping[] lastFivePings = new Ping[windowSize];
         Pong pong = null;
         byte[] sendData = null;
@@ -88,7 +88,7 @@ public class GBNClient {
                         j = 0;
                         do {
                             try {
-                                // recieves duplicates but doesn't process the data, -1 if everythings okay
+                                // recieves duplicates but doesn't process the data
                                 while (windowSize - failedAckIndex != 0) {
                                     receivePacket = new DatagramPacket(receiveData,
                                         receiveData.length);

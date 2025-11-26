@@ -67,6 +67,8 @@ public class GBNUDPServer {
 					firstTry = true;
 				}
 
+				Thread.sleep(1000);
+
 				sendData = pong.data();
 				System.out.println("Pong encoded");
 				System.out.println("Length: " + sendData.length);
