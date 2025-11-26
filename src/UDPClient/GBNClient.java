@@ -13,7 +13,8 @@ public class GBNClient {
     public static void main(String args[]) throws Exception {
         DatagramSocket clientSocket = null;
         Ping ping = null;
-        Ping[] lastFivePings = new Ping[5];
+        int windowSize = 3;
+        Ping[] lastFivePings = new Ping[windowSize];
         Pong pong = null;
         byte[] sendData = null;
         byte[] receiveData = new byte[1024];
@@ -53,12 +54,12 @@ public class GBNClient {
             try {
                 switch (state) {
                     case GBNClientState.WAIT_FOR_CALL:
-                        for (int i = 0; i < 5; i++) {
+                        for (int i = 0; i < windowSize; i++) {
                             if (!ackReceived) {
                                 ping = lastFivePings[j];
                                 lastFivePings[i] = ping;
                                 j++;
-                                if (j % 5 == 0) {
+                                if (j % windowSize == 0) {
                                     ackReceived = true;
                                 }
                             } else {
@@ -88,7 +89,7 @@ public class GBNClient {
                         do {
                             try {
                                 // recieves duplicates but doesn't process the data, -1 if everythings okay
-                                while (failedAckIndex >= 0) {
+                                while (failedAckIndex - (windowSize - 1) >= 0) {
                                     receivePacket = new DatagramPacket(receiveData,
                                         receiveData.length);
 
@@ -128,7 +129,7 @@ public class GBNClient {
                                 failedAckIndex = j;
                                 break;
                             }
-                        } while (ackReceived && j != 5);
+                        } while (ackReceived && j != windowSize);
 
                         state = GBNClientState.WAIT_FOR_CALL;
                         break;
