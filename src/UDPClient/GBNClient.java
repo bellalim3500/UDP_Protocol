@@ -28,7 +28,7 @@ public class GBNClient {
         float receiveStart = 0;
         float receiveEnd = 0;
         int j = 0;
-        int failedAckIndex = -1;
+        int failedAckIndex = windowSize;
         boolean running;
         boolean ackReceived = true;
 
@@ -89,14 +89,14 @@ public class GBNClient {
                         do {
                             try {
                                 // recieves duplicates but doesn't process the data, -1 if everythings okay
-                                while (failedAckIndex - (windowSize - 1) >= 0) {
+                                while (windowSize - failedAckIndex != 0) {
                                     receivePacket = new DatagramPacket(receiveData,
                                         receiveData.length);
 
                                     clientSocket.receive(receivePacket);
                                     receiveEnd = System.currentTimeMillis();
 
-                                    failedAckIndex--;
+                                    failedAckIndex++;
                                 }
 
                                 receivePacket = new DatagramPacket(receiveData,
